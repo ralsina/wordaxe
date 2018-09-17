@@ -240,7 +240,7 @@ def _putFragLine(cur_x, tx, line):
                 xs.backgroundColor = backColor
                 xs.backgroundFontSize = f.fontSize
             # Underline
-            if not xs.underline and f.underline:
+            if not xs.underline and getattr(f, 'underline', False):
                 xs.underline = 1
                 xs.underline_x = cur_x_s
                 xs.underlineColor = f.textColor
@@ -253,7 +253,7 @@ def _putFragLine(cur_x, tx, line):
                     xs.underlines.append( (xs.underline_x, cur_x_s, xs.underlineColor) )
                     xs.underlineColor = xs.textColor
                     xs.underline_x = cur_x_s
-            if not xs.strike and f.strike:
+            if not xs.strike and getattr(f, 'strike', False):
                 xs.strike = 1
                 xs.strike_x = cur_x_s
                 xs.strikeColor = f.textColor
@@ -336,6 +336,7 @@ def _handleBulletWidth(bulletText, style, max_widths):
 
 _scheme_re = re.compile('^[a-zA-Z][-+a-zA-Z0-9]+$')
 def _doLink(tx,link,rect):
+    link = link[0][1]
     parts = link.split(':',1)
     scheme = len(parts)==2 and parts[0].lower() or ''
     if _scheme_re.match(scheme) and scheme!='document':
@@ -729,7 +730,7 @@ class Paragraph(Flowable):
         lines = self._cache['lines']
         #print "lines:", lines
         unused = self._cache['unused']
-        #print "unused:", unused      
+        #print "unused:", unused
         if len(lines) < 1: # minimum widow rows
             #print "split with lines == []"
             # Put everything on the next frame
@@ -776,7 +777,7 @@ class Paragraph(Flowable):
             # Widows/orphans control
             # There's some disagreement about definitions of widows and orphans.
             # We use the definitions from Wikipedia and the Chicago Manual of Style.
-            # 
+            #
             # Note:
             # We cannot control something like "minimum widow lines",
             # since we have not yet computed the lines for the second part.
@@ -791,7 +792,7 @@ class Paragraph(Flowable):
                     #print "orphans not allowed => return []"
                     return []
             if False and not allowWidows:
-                # NOT SUPPORTED                     
+                # NOT SUPPORTED
                 if n==s+1: #widow?
                     if (allowOrphans and n==3) or n>3:
                         s -= 1  #give the widow some company
@@ -807,12 +808,12 @@ class Paragraph(Flowable):
                 style = deepcopy(style)
                 style.firstLineIndent = 0
                 style.allowOrphans = 1
-            
+
             # I guess the right place to implement allowWidows is somewhere here:
             # We'd have test if the second paragraph consists of one line or more.
             # If it's only one line, then we'd have to cut off the last line of the
             # first paragraph and move the text on to second paragraph.
-            
+
             second = self.__class__(text=None, style=style, bulletText=None, frags=unused, caseSensitive=self.caseSensitive)
             #print "first id=%d height=%f" % (id(first), first.height)
             #print "secnd id=%d" % id(second)
